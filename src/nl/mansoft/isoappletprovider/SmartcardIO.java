@@ -99,14 +99,6 @@ public class SmartcardIO {
         return answer;
     }
 
-    private ResponseAPDU selectIsoAppletAndRunAPDU(CommandAPDU c) throws CardException {
-        ResponseAPDU responseAPDU = selectAID(AID_ISOAPPLET);
-        if (responseAPDU.getSW() == SW_NO_ERROR) {
-            responseAPDU = runAPDU(c);
-        }
-        return responseAPDU;
-    }
-
     public boolean verify(byte[] password) {
         boolean result = false;
         try {
@@ -122,7 +114,7 @@ public class SmartcardIO {
     public byte[] getChallenge(int numBytes) {
         byte[] data = null;
         try {
-            ResponseAPDU responseAPDU = selectIsoAppletAndRunAPDU(new CommandAPDU(0x00, INS_GET_CHALLENGE, 0x00, 0x00, numBytes));
+            ResponseAPDU responseAPDU = runAPDU(new CommandAPDU(0x00, INS_GET_CHALLENGE, 0x00, 0x00, numBytes));
             if (responseAPDU.getSW() == SW_NO_ERROR) {
                 data = responseAPDU.getData();
             }
@@ -143,6 +135,13 @@ public class SmartcardIO {
         return result;
     }
     
+    /**
+     * decipher
+     * @param input    
+     * @param inputOffset    
+     * @param inputLen    
+     * @return     
+    */
     public byte[] performSecurityOperation(byte[] input, int inputOffset, int inputLen) {
         byte[] data = new byte[inputLen + 1];
         data[0] = 0; // padding indicator byte: "No further indication"
@@ -162,6 +161,27 @@ public class SmartcardIO {
             Logger.getLogger(SimCipher.class.getName()).log(Level.SEVERE, null, ex);
         }
         return decrypted;        
+    }
+    
+    /**
+     * sign
+     * @param input
+     * @param inputLen
+     * @return 
+     */
+    public byte[] performSecurityOperation(byte[] input, int inputLen) {
+        byte[] signature = null;
+        try {
+            CommandAPDU commandAPDU = new CommandAPDU(0x00, INS_PERFORM_SECURITY_OPERATION, 0x9E, 0x9A, input, 0, inputLen, 0x100);
+            System.out.println("challenge: " + Util.ByteArrayToHexString(commandAPDU.getData()));
+            ResponseAPDU responseAPDU = runAPDU(commandAPDU);
+            if (responseAPDU.getSW() == SW_NO_ERROR) {
+                signature = responseAPDU.getData();
+            }                
+        } catch (CardException ex) {
+            Logger.getLogger(SimCipher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return signature;        
     }
     
     public List<CardTerminal> listTerminals() throws CardException {

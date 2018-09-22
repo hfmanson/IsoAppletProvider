@@ -11,11 +11,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.smartcardio.CardException;
-import javax.smartcardio.CommandAPDU;
-import javax.smartcardio.ResponseAPDU;
 
 /**
  *
@@ -64,19 +60,8 @@ public class SimSignature extends SignatureSpi{
     @Override
     protected byte[] engineSign() throws SignatureException {
         byte[] signature = null;
-        try {
-            CommandAPDU commandAPDU = new CommandAPDU(0x00, 0x22, 0x41, 0xb6, new byte[] { (byte) 0x80, (byte) 0x01, (byte) 0x11, (byte) 0x81, (byte) 0x02, (byte) 0x50, (byte) 0x15, (byte) 0x84, (byte) 0x01, simPrivateKey.getKeyReference().byteValue()});
-            ResponseAPDU responseAPDU = smartcardIO.runAPDU(commandAPDU);
-            if (responseAPDU.getSW() == 0x9000) {
-                commandAPDU = new CommandAPDU(0x00, 0x2A, 0x9E, 0x9A, buffer, 0, offset, 0x100);
-                System.out.println("challenge: " + Util.ByteArrayToHexString(commandAPDU.getData()));
-                responseAPDU = smartcardIO.runAPDU(commandAPDU);
-                if (responseAPDU.getSW() == 0x9000) {
-                    signature = responseAPDU.getData();
-                }
-            }
-        } catch (CardException ex) {
-            Logger.getLogger(SimSignature.class.getName()).log(Level.SEVERE, null, ex);
+        if (smartcardIO.manageSecurityEnvironment(simPrivateKey.getKeyReference().byteValue())) {
+            signature = smartcardIO.performSecurityOperation(buffer, offset);
         }
         return signature;
     }
