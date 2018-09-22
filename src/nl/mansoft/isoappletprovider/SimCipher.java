@@ -85,7 +85,7 @@ public class SimCipher extends CipherSpi {
 
     @Override
     protected byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen) throws IllegalBlockSizeException, BadPaddingException {
-        return smartcardIO.performSecurityOperation(input, inputOffset, inputLen);
+        return smartcardIO.decipher(input, inputOffset, inputLen);
     }
 
     @Override

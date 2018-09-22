@@ -18,9 +18,9 @@ import javax.smartcardio.CardException;
  * @author hfman
  */
 public class SimSignature extends SignatureSpi{
-    private byte[] buffer;
+    private final byte[] buffer;
     private int offset;
-    private SmartcardIO smartcardIO;
+    private final SmartcardIO smartcardIO;
     private SimPrivateKey simPrivateKey;
     public SimSignature() throws CardException {
         buffer = new byte[256];
@@ -34,7 +34,6 @@ public class SimSignature extends SignatureSpi{
     @Override
     protected void engineInitSign(PrivateKey privateKey) throws InvalidKeyException {
         simPrivateKey = (SimPrivateKey) privateKey;
-        System.out.println("keyref: " + simPrivateKey.getKeyReference());
         offset = 0;
     }
 
@@ -61,7 +60,7 @@ public class SimSignature extends SignatureSpi{
     protected byte[] engineSign() throws SignatureException {
         byte[] signature = null;
         if (smartcardIO.manageSecurityEnvironment(simPrivateKey.getKeyReference().byteValue())) {
-            signature = smartcardIO.performSecurityOperation(buffer, offset);
+            signature = smartcardIO.sign(buffer, offset);
         }
         return signature;
     }

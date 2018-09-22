@@ -142,7 +142,7 @@ public class SmartcardIO {
      * @param inputLen    
      * @return     
     */
-    public byte[] performSecurityOperation(byte[] input, int inputOffset, int inputLen) {
+    public byte[] decipher(byte[] input, int inputOffset, int inputLen) {
         byte[] data = new byte[inputLen + 1];
         data[0] = 0; // padding indicator byte: "No further indication"
         System.arraycopy(input, inputOffset, data, 1, inputLen);
@@ -169,7 +169,7 @@ public class SmartcardIO {
      * @param inputLen
      * @return 
      */
-    public byte[] performSecurityOperation(byte[] input, int inputLen) {
+    public byte[] sign(byte[] input, int inputLen) {
         byte[] signature = null;
         try {
             CommandAPDU commandAPDU = new CommandAPDU(0x00, INS_PERFORM_SECURITY_OPERATION, 0x9E, 0x9A, input, 0, inputLen, 0x100);
