@@ -11,7 +11,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
-import javax.smartcardio.CardException;
 
 /**
  *
@@ -22,7 +21,7 @@ public class SimSignature extends SignatureSpi{
     private int offset;
     private final SmartcardIO smartcardIO;
     private SimPrivateKey simPrivateKey;
-    public SimSignature() throws CardException {
+    public SimSignature() {
         buffer = new byte[256];
         smartcardIO = SmartcardIO.getInstance();
     }
