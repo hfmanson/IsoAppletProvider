@@ -42,14 +42,14 @@ public class SmartcardIO {
     private static SmartcardIO smartcardIO;
 
     public void setupToken() {
-        token = new IsoAppletToken(cardChannel);        
+        token = new IsoAppletToken(cardChannel);
     }
-    
+
     public Token getToken() {
         return token;
     }
-    
-    public static SmartcardIO getInstance() {
+
+    public static SmartcardIO getInstance(byte[] aid) {
         if (smartcardIO == null) {
             try {
                 smartcardIO = new SmartcardIO();
@@ -60,6 +60,13 @@ public class SmartcardIO {
                 } else {
                     smartcardIO.setup(reader);
                 }
+                if (aid != null) {
+                    CommandAPDU c = new CommandAPDU(0x00, 0xA4, 0x04, 0x00, aid);
+                    ResponseAPDU responseAPDU = smartcardIO.runAPDU(c);
+                    if (responseAPDU.getSW() != 0x9000) {
+                        System.err.println("Error selecting: " + Util.ByteArrayToHexString(aid));
+                    }
+                }
                 smartcardIO.setupToken();
             } catch (CardException ex) {
                 Logger.getLogger(SmartcardIO.class.getName()).log(Level.SEVERE, null, ex);
@@ -67,6 +74,10 @@ public class SmartcardIO {
             }
         }
         return smartcardIO;
+    }
+
+    public static SmartcardIO getInstance() {
+        return getInstance(null);
     }
 
     public static byte hi(int x) {
@@ -134,13 +145,13 @@ public class SmartcardIO {
         }
         return result;
     }
-    
+
     /**
      * decipher
-     * @param input    
-     * @param inputOffset    
-     * @param inputLen    
-     * @return     
+     * @param input
+     * @param inputOffset
+     * @param inputLen
+     * @return
     */
     public byte[] decipher(byte[] input, int inputOffset, int inputLen) {
         byte[] data = new byte[inputLen + 1];
@@ -160,14 +171,14 @@ public class SmartcardIO {
         } catch (CardException ex) {
             Logger.getLogger(SimCipher.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return decrypted;        
+        return decrypted;
     }
-    
+
     /**
      * sign
      * @param input
      * @param inputLen
-     * @return 
+     * @return
      */
     public byte[] sign(byte[] input, int inputLen) {
         byte[] signature = null;
@@ -177,13 +188,13 @@ public class SmartcardIO {
             ResponseAPDU responseAPDU = runAPDU(commandAPDU);
             if (responseAPDU.getSW() == SW_NO_ERROR) {
                 signature = responseAPDU.getData();
-            }                
+            }
         } catch (CardException ex) {
             Logger.getLogger(SimCipher.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return signature;        
+        return signature;
     }
-    
+
     public List<CardTerminal> listTerminals() throws CardException {
         // Display the list of terminals
         TerminalFactory factory = TerminalFactory.getDefault();
@@ -202,7 +213,7 @@ public class SmartcardIO {
         //}
         terminal.waitForCardPresent(0);
         // Connect wit the card
-        card = terminal.connect("T=0");
+        card = terminal.connect("*");
         System.out.println("card protocol: " +  card.getProtocol());
         if (debug) {
             System.out.println("card: " + card + ", ATR: " + Util.ByteArrayToHexString(card.getATR().getBytes()));

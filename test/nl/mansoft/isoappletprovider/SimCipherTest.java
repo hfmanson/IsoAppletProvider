@@ -52,33 +52,35 @@ public class SimCipherTest {
     @Test
     public void testDecrypt() throws CardException, KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         System.out.println("testDecrypt");
+        String alias = TestUtil.getSystemProperty("nl.mansoft.isoappletprovider.alias");
+        if (alias != null) {
+            Provider p = new SimProvider();
+            Security.addProvider(p);
 
-        Provider p = new SimProvider();
-        Security.addProvider(p);
+            SecureRandom secureRandom = SecureRandom.getInstance("SIM-PRNG");
+            byte[] random = secureRandom.generateSeed(128);
 
-        SecureRandom secureRandom = SecureRandom.getInstance("SIM-PRNG");
-        byte[] random = secureRandom.generateSeed(128);
-
-        KeyStore ks = KeyStore.getInstance("SIM");
-        ks.load(null, new char[] { '1', '2', '3', '4' });
-        System.out.println(ks.getType());
+            KeyStore ks = KeyStore.getInstance(SimKeystore.getType());
+            ks.load(null, new char[] { '1', '2', '3', '4' });
+            System.out.println(ks.getType());
 
 
-        Certificate sim923 = ks.getCertificate("sim923");
-        PublicKey pubkey = sim923.getPublicKey();
-        String algorithm = pubkey.getAlgorithm();
-        System.out.println("Public key algorithm: " + algorithm);
-        Cipher encryptCipher = Cipher.getInstance(algorithm);
-        encryptCipher.init(Cipher.ENCRYPT_MODE, pubkey);
-        byte[] encrypted = encryptCipher.doFinal(random);
-        
-        PrivateKey privatekey = (PrivateKey) ks.getKey("sim923", null);
-        algorithm = privatekey.getAlgorithm();
-        System.out.println("Private key algorithm: " + algorithm);
-        Cipher decryptCipher = Cipher.getInstance(algorithm);
-        decryptCipher.init(Cipher.DECRYPT_MODE, privatekey);
-        byte[] decrypted = decryptCipher.doFinal(encrypted);
-        
-        assertArrayEquals(decrypted, random);
+            Certificate sim923 = ks.getCertificate(alias);
+            PublicKey pubkey = sim923.getPublicKey();
+            String algorithm = pubkey.getAlgorithm();
+            System.out.println("Public key algorithm: " + algorithm);
+            Cipher encryptCipher = Cipher.getInstance(algorithm);
+            encryptCipher.init(Cipher.ENCRYPT_MODE, pubkey);
+            byte[] encrypted = encryptCipher.doFinal(random);
+
+            PrivateKey privatekey = (PrivateKey) ks.getKey(alias, null);
+            algorithm = privatekey.getAlgorithm();
+            System.out.println("Private key algorithm: " + algorithm);
+            Cipher decryptCipher = Cipher.getInstance(algorithm, p);
+            decryptCipher.init(Cipher.DECRYPT_MODE, privatekey);
+            byte[] decrypted = decryptCipher.doFinal(encrypted);
+
+            assertArrayEquals(decrypted, random);
+        }
     }
 }

@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class SimSecureRandomTest {
 
     private SecureRandom secureRandom;
-    
+
     public SimSecureRandomTest() {
     }
 

@@ -43,12 +43,12 @@ public class SimKeystore extends KeyStoreSpi {
     private Set<String> aliases;
     private SmartcardIO smartcardIO;
     private byte[] password;
-    
+
     public SimKeystore() {
         try {
             smartcardIO = SmartcardIO.getInstance();
             Token token = smartcardIO.getToken();
-            
+
             List<Application> apps = applicationFactory.listApplications(token);
             Application app = apps.get(0);
             PathHelper.selectDF(token, new TokenPath(app.getApplicationTemplate().getPath()));
@@ -69,12 +69,16 @@ public class SimKeystore extends KeyStoreSpi {
         }
     }
 
+    public static String getType() {
+        return "SIM";
+    }
+
     private void verify() throws IOException {
         if (!smartcardIO.verify(password)) {
             throw new IOException("Wrong IsoApplet PIN");
-        }        
+        }
     }
-    
+
     @Override
     public Key engineGetKey(String alias, char[] password) throws NoSuchAlgorithmException, UnrecoverableKeyException {
         List<PKCS15PrivateKey> list = pkcs15privatekeys.getSequence();
@@ -101,7 +105,7 @@ public class SimKeystore extends KeyStoreSpi {
     public Certificate engineGetCertificate(String alias) {
         Certificate certificate = null;
         List<PKCS15Certificate> list = pkcs15certificates.getSequence();
-        
+
         for (PKCS15Certificate pkcs15certificate : list) {
             CommonObjectAttributes commonObjectAttributes = pkcs15certificate.getCommonObjectAttributes();
             String label = commonObjectAttributes.getLabel();
@@ -167,14 +171,19 @@ public class SimKeystore extends KeyStoreSpi {
 
     @Override
     public boolean engineIsKeyEntry(String alias) {
-        boolean isKeyEntry = false;
-        return isKeyEntry;
+        try {
+            return engineGetKey(alias, null) != null;
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(SimKeystore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnrecoverableKeyException ex) {
+            Logger.getLogger(SimKeystore.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     @Override
     public boolean engineIsCertificateEntry(String alias) {
-        boolean isCertificateEntry = false;
-        return isCertificateEntry;
+        return engineGetCertificate(alias) != null;
     }
 
     @Override

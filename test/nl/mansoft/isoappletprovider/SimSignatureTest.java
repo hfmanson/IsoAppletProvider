@@ -54,27 +54,36 @@ public class SimSignatureTest {
     @Test
     public void testSignature() throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, InvalidKeyException, SignatureException {
         System.out.println("testSignature");
+        String alias = TestUtil.getSystemProperty("nl.mansoft.isoappletprovider.alias");
+        if (alias != null) {
+            Provider p = new SimProvider();
+            Security.addProvider(p);
+            SecureRandom secureRandom = SecureRandom.getInstance("SIM-PRNG");
+            byte[] random = secureRandom.generateSeed(128);
 
-        Provider p = new SimProvider();
-        Security.addProvider(p);
+            KeyStore ks = KeyStore.getInstance(SimKeystore.getType());
+            ks.load(null, new char[] { '1', '2', '3', '4' });
+            System.out.println(ks.getType());
+            PrivateKey privatekey = (PrivateKey) ks.getKey(alias, null);
+            if (privatekey == null) {
+                fail("Private key '" + alias + "' not found");
+            } else {
+                Signature signSignature = Signature.getInstance("NONEwithRSA");
+                signSignature.initSign(privatekey);
+                signSignature.update(random);
+                byte[] signature = signSignature.sign();
+                System.out.println("signature: " + Util.ByteArrayToHexString(signature));
 
-        SecureRandom secureRandom = SecureRandom.getInstance("SIM-PRNG");
-        byte[] random = secureRandom.generateSeed(128);
-
-        KeyStore ks = KeyStore.getInstance("SIM");
-        ks.load(null, new char[] { '1', '2', '3', '4' });
-        System.out.println(ks.getType());
-        PrivateKey privatekey = (PrivateKey) ks.getKey("sim923", null);
-        Signature signSignature = Signature.getInstance("NONEwithRSA");
-        signSignature.initSign(privatekey);
-        signSignature.update(random);
-        byte[] signature = signSignature.sign();
-        System.out.println("signature: " + Util.ByteArrayToHexString(signature));
-
-        Certificate sim923 = ks.getCertificate("sim923");
-        Signature verifySignature = Signature.getInstance("NONEwithRSA");
-        verifySignature.initVerify(sim923);
-        verifySignature.update(random);
-        assertTrue(verifySignature.verify(signature));
+                Certificate certificate = ks.getCertificate(alias);
+                if (certificate == null) {
+                    fail("Certificate '" + alias + "' not found");
+                } else {
+                    Signature verifySignature = Signature.getInstance("NONEwithRSA");
+                    verifySignature.initVerify(certificate);
+                    verifySignature.update(random);
+                    assertTrue(verifySignature.verify(signature));
+                }
+            }
+        }
     }
 }

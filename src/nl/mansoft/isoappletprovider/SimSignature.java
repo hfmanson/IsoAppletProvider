@@ -23,7 +23,7 @@ public class SimSignature extends SignatureSpi{
     private SimPrivateKey simPrivateKey;
     public SimSignature() {
         buffer = new byte[256];
-        smartcardIO = SmartcardIO.getInstance();
+        smartcardIO = SmartcardIO.getInstance(SmartcardIO.AID_ISOAPPLET);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class SimSignature extends SignatureSpi{
 
     @Override
     protected boolean engineVerify(byte[] sigBytes) throws SignatureException {
-        return true;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

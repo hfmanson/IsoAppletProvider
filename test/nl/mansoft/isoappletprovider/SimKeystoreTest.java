@@ -63,14 +63,17 @@ public class SimKeystoreTest {
      */
     @Test
     public void testKeystore() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException    {
-        Provider p = new SimProvider();
-        Security.addProvider(p);
-        //Util.printProviders();
-        KeyStore ks = KeyStore.getInstance("SIM");
-        ks.load(null, new char[] { '1', '2', '3', '4' });
-        System.out.println("Keystore size: " + ks.size());
-        printCertificates(ks);
-        assertTrue(ks.containsAlias("sim923"));
-        assertFalse(ks.containsAlias("larie"));
+        String alias = TestUtil.getSystemProperty("nl.mansoft.isoappletprovider.alias");
+        if (alias != null) {
+            Provider p = new SimProvider();
+            Security.addProvider(p);
+            //Util.printProviders();
+            KeyStore ks = KeyStore.getInstance(SimKeystore.getType());
+            ks.load(null, new char[] { '1', '2', '3', '4' });
+            System.out.println("Keystore size: " + ks.size());
+            printCertificates(ks);
+            assertTrue(ks.containsAlias(alias));
+            assertFalse(ks.containsAlias("larie"));
+        }
     }
 }

@@ -12,7 +12,7 @@ public class SimSecureRandom extends SecureRandomSpi {
 
 
     public SimSecureRandom() {
-        smartcardIO = SmartcardIO.getInstance();
+        smartcardIO = SmartcardIO.getInstance(SmartcardIO.AID_ISOAPPLET);
     }
 
     @Override
