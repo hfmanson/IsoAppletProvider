@@ -66,7 +66,7 @@ public class SimSignature extends SignatureSpi{
 
     @Override
     protected boolean engineVerify(byte[] sigBytes) throws SignatureException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Verify not supported.");
     }
 
     @Override

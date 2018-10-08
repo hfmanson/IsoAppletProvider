@@ -81,6 +81,7 @@ public class SimKeystore extends KeyStoreSpi {
 
     @Override
     public Key engineGetKey(String alias, char[] password) throws NoSuchAlgorithmException, UnrecoverableKeyException {
+        System.out.println("engineGetKey, alias: " + alias);
         List<PKCS15PrivateKey> list = pkcs15privatekeys.getSequence();
         for (PKCS15PrivateKey pkcs15privatekey : list) {
             CommonObjectAttributes commonObjectAttributes = pkcs15privatekey.getCommonObjectAttributes();
@@ -97,7 +98,10 @@ public class SimKeystore extends KeyStoreSpi {
 
     @Override
     public Certificate[] engineGetCertificateChain(String alias) {
-        Certificate[] certificateChain = null;
+        System.out.println("engineGetCertificateChain, alias1: " + alias);
+
+        Certificate certificate = engineGetCertificate(alias);
+        Certificate[] certificateChain = new Certificate[] { certificate };
         return certificateChain;
     }
 
@@ -123,8 +127,7 @@ public class SimKeystore extends KeyStoreSpi {
 
     @Override
     public Date engineGetCreationDate(String alias) {
-        Date creationDate = null;
-        return creationDate;
+        return null;
     }
 
     @Override
