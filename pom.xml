@@ -7,11 +7,6 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.opensc</groupId>
             <artifactId>pkcs15</artifactId>
             <version>0.0.1-SNAPSHOT</version>
